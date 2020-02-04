@@ -596,6 +596,9 @@ class WebSocketHandler(tornado.web.RequestHandler):
             # we can close the connection more gracefully.
             self.stream.close()
 
+    def get_websocket_protocol_class(self) -> Type["WebSocketProtocol"]:
+        return WebSocketProtocol13
+
     def get_websocket_protocol(self) -> Optional["WebSocketProtocol"]:
         websocket_version = self.request.headers.get("Sec-WebSocket-Version")
         if websocket_version in ("7", "8", "13"):
@@ -605,7 +608,7 @@ class WebSocketHandler(tornado.web.RequestHandler):
                 max_message_size=self.max_message_size,
                 compression_options=self.get_compression_options(),
             )
-            return WebSocketProtocol13(self, False, params)
+            return self.get_websocket_protocol_class()(self, False, params)
         return None
 
     def _detach_stream(self) -> IOStream:
